@@ -58,9 +58,13 @@ def print_gpu_memory_usage(current_gpu_id):
 def generate_response(model, tokenizer, convo, max_new_tokens, temperature):
     """Generates a response from the model based on the entire conversation history."""
     # Tokenize the conversation
-    tokenized_chat = tokenizer.apply_chat_template(convo, tokenize=True, add_generation_prompt=True, return_tensors="pt").to('cuda')
-    prompt_len = tokenized_chat.shape[-1]
-    output_tokens = model.generate(tokenized_chat, temperature=temperature, max_new_tokens=max_new_tokens, pad_token_id=tokenizer.eos_token_id)[0]
+    tokenized_chat = tokenizer.apply_chat_template(convo,
+                                                add_generation_prompt=True,
+                                                return_dict=True,
+                                                return_tensors="pt")
+    tokenized_chat = {k: v.to(model.device) for k, v in tokenized_chat.items()}
+    prompt_len = len(tokenized_chat['input_ids'][0])
+    output_tokens = model.generate(**tokenized_chat, temperature=temperature, max_new_tokens=max_new_tokens, pad_token_id=tokenizer.eos_token_id)[0]
 
     # Generate output
     output_text = tokenizer.decode(output_tokens[prompt_len:], skip_special_tokens=True)
