@@ -7,7 +7,6 @@ import argparse
 import copy
 from datetime import datetime
 from transformers import AutoTokenizer, AutoModelForCausalLM
-from accelerate import Accelerator
 
 ALL_GENRE = ['Expressionism', 'Abstractionism', 'Social Realism', 'Muralism', 'Impressionism', 'Surrealism', 'Realism', 'Byzantine Art', 'Post-Impressionism', 'Symbolism', 'Art Nouveau', 'Northern Renaissance', 'Suprematism', 'Cubism', 'Baroque', 'Romanticism', 'Primitivism', 'Mannerism', 'Proto Renaissance', 'Early Renaissance', 'High Renaissance', 'Neoplasticism', 'Pop Art', 'Abstract Expressionism']
 

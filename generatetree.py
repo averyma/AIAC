@@ -2,6 +2,7 @@ import pandas as pd
 import ipdb
 import pprint
 import torch
+import argparse
 
 # Check the structure of the dataset
 # print(df_exploded.head())
@@ -30,12 +31,15 @@ def traverse_tree(tree, user_preferences):
     return current_node
 
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-d", "--dataset-folder", type=str, default = '/fs01/home/ama/workspace/aiac/dataset/')
+    args = parser.parse_args()
 
     # Focusing on genre and nationality
     hierarchy_columns = ['genre', 'nationality','name']
 
     # Load the csv file
-    df = pd.read_csv('./dataset/artists.csv')
+    df = pd.read_csv(f'{args.dataset_folder}/artists.csv')
 
     # Some columns have multiple values separated by commas, we break them into individual rows
     df['genre'] = df['genre'].str.split(',')

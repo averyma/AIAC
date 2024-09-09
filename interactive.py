@@ -11,7 +11,6 @@ from pathlib import Path
 from datetime import datetime
 import shutil
 from transformers import AutoTokenizer, AutoModelForCausalLM
-from accelerate import Accelerator
 
 from utils import (
     ALL_GENRE, ALL_COUNTRY, ALL_ARTIST,
@@ -61,6 +60,7 @@ def main():
     parser.add_argument("-o", "--output-folder", type=str, default = '/fs01/home/ama/workspace/aiac/convo/')
     parser.add_argument("-d", "--dataset-folder", type=str, default = '/fs01/home/ama/workspace/aiac/dataset/')
     parser.add_argument("-r", "--recommend-folder", type=str, default = '/fs01/home/ama/workspace/aiac/recommend/')
+    parser.add_argument("-m", "--model-path", type=str, default = '/model-weights/Meta-Llama-3.1-8B-Instruct')
     parser.add_argument("--max-new-tokens", type=int, default=200)
     parser.add_argument("--temperature", type=float, default=1.0)
     args = parser.parse_args()
@@ -70,7 +70,7 @@ def main():
 
     # Initialization
     image_folder = f'{args.dataset_folder}/images/images/'
-    model_path = "/model-weights/Meta-Llama-3.1-8B-Instruct"
+    model_path = args.model_path
     system_prompt = "You are an AI Art Curator (AIAC) that interacts with users to recommend paintings. You will engage in a thoughtful dialogue with the user to understand their artistic tastes, focusing on the genre and the country of the artist. The available genres are: 'Expressionism', 'Abstractionism', 'Social Realism', 'Muralism', 'Impressionism', 'Surrealism', 'Realism', 'Byzantine Art', 'Post-Impressionism', 'Symbolism', 'Art Nouveau', 'Northern Renaissance', 'Suprematism', 'Cubism', 'Baroque', 'Romanticism', 'Primitivism', 'Mannerism', 'Proto Renaissance', 'Early Renaissance', 'High Renaissance', 'Neoplasticism', 'Pop Art', 'Abstract Expressionism'. Artists come from the following countries:  'Italian', 'Russian', 'Mexican', 'French', 'Belgian', 'Spanish', 'Dutch', 'Austrian', 'Flemish', 'Greek', 'German', 'British', 'Jewish', 'Belarusian', 'Norwegian', 'Swiss', 'American'. The available artists are: 'Amedeo Modigliani', 'Vasiliy Kandinskiy', 'Diego Rivera', 'Claude Monet', 'Rene Magritte', 'Salvador Dali', 'Edouard Manet', 'Andrei Rublev', 'Vincent van Gogh', 'Gustav Klimt', 'Hieronymus Bosch', 'Kazimir Malevich', 'Mikhail Vrubel', 'Pablo Picasso', 'Peter Paul Rubens', 'Pierre-Auguste Renoir', 'Francisco Goya', 'Frida Kahlo', 'El Greco', 'Albrecht Dürer', 'Alfred Sisley', 'Pieter Bruegel', 'Marc Chagall', 'Giotto di Bondone', 'Sandro Botticelli', 'Caravaggio', 'Leonardo da Vinci', 'Diego Velazquez', 'Henri Matisse', 'Jan van Eyck', 'Edgar Degas', 'Rembrandt', 'Titian', 'Henri de Toulouse-Lautrec', 'Gustave Courbet', 'Camille Pissarro', 'William Turner', 'Edvard Munch', 'Paul Cezanne', 'Eugene Delacroix', 'Henri Rousseau', 'Georges Seurat', 'Paul Klee', 'Piet Mondrian', 'Joan Miro', 'Andy Warhol', 'Paul Gauguin', 'Raphael', 'Michelangelo', 'Jackson Pollock'. If the user asks a question non-related to art, you can politely decline to answer and redirect the conversation back to art. Remember to be polite, respectful, and professional in your responses."
 
     # Initialize accelerator and load model/tokenizer
@@ -94,7 +94,7 @@ def main():
 
     # Multi-turn conversation loop
     print(f"===== Beginning of your conversation with AIAC =====")
-    print('AIAC: How can I help you in your art exploration today? We will focus on genres and country of the artist to recommend paintings.')
+    print('AIAC: How can I help you in your art exploration today? We will focus on genres and country of the artist to recommend paintings. (Type "Help" for more information.)')
     while True:
         user_prompt = input("User: ")
 
@@ -153,7 +153,7 @@ def main():
                 # Otherwise, we will use the genre and country to make a recommendation
                 try:
                     # Get the hierarchy from the saved file
-                    hierarchy = torch.load('./hierarchy.pt', weights_only=True)
+                    hierarchy = torch.load(f'{args.dataset_folder}/hierarchy.pt', weights_only=True)
                 except FileNotFoundError:
                     logging.error("Hierarchy file not found. Please run 'python generatetree.py' to generate the hierarchy.")
                     system_command('exit', convo)
